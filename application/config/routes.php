@@ -38,9 +38,9 @@
 |
 */
 
-$route['default_controller'] = "welcome";
-$route['404_override'] = '';
+$route['default_controller'] = "pages";
+$route['404_override'] = '404';
 
-
+$route['(:any)'] = 'pages/$1';
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */

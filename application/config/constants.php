@@ -37,5 +37,11 @@ define('FOPEN_WRITE_CREATE_STRICT',				'xb');
 define('FOPEN_READ_WRITE_CREATE_STRICT',		'x+b');
 
 
+
+define('USERS_TABLE', 'users');
+define('GAME_USERS_PARAMETERS_TABLE', 'game_users_parameters');
+define('GAME_USERS_ENHANCEMENTS_TABLE', 'game_users_enhancements');
+define('GAME_CRUSADE_TABLE', 'game_crusade');
+
 /* End of file constants.php */
 /* Location: ./application/config/constants.php */
