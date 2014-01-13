@@ -1,4 +1,4 @@
-<?$this->load->view('main_header')?>
+<h1><?=$this->lang->line('user_registration')?></h1>
 <form method="post" action="<?=base_url()?>join/send/">
     <div class="input_label">Пол</div>
     <select name="user_gender">
@@ -7,4 +7,3 @@
     </select>
     <input type="submit" value="Далее" />
 </form>
-<?$this->load->view('main_footer')?>

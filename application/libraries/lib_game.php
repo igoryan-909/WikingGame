@@ -91,19 +91,22 @@ class lib_game
                     'game_crusade_time_start'       => $time_start,
                     'game_crusade_time_end'         => $time_end,
                     'game_crusade_set_limit_date'   => date('Y-m-d'),
-                    'game_crusade_send_resources'   => '0'
+                    'game_crusade_send_resources'   => '0',
+                    'game_crusade_in_crusade'       => '1'
                     );
         if(!empty($user_data))
         {
-            if($user_data[0]['game_crusade_current_date_total_time'] > $time_length)
+            if($user_data[0]['game_crusade_current_date_total_time'] > $time_length && !$user_data[0]['game_crusade_in_crusade'])
             {
                 $data['game_crusade_current_date_total_time'] = $user_data[0]['game_crusade_current_date_total_time'] - $time_length;
-                $CI->crud->edit(GAME_CRUSADE_TABLE, $data, $where);
+                if($CI->crud->edit(GAME_CRUSADE_TABLE, $data, $where)) return TRUE;
+                else return FALSE;
             } else return FALSE;
         } else
         {
             $data['game_crusade_current_date_total_time'] = 100 - $time_length;
-            $CI->crud->add(GAME_CRUSADE_TABLE, $data + $where);
+            if($CI->crud->add(GAME_CRUSADE_TABLE, $data + $where) != FALSE) return TRUE;
+            else return FALSE;
             //print_r($data + $where);
         }
     }
@@ -123,9 +126,9 @@ class lib_game
         $game_crusade_send_resources = 1;
         if(!empty($user_data))
         {
-            if(time() < $user_data[0]['game_crusade_time_end'] && time() > $user_data[0]['game_crusade_time_start'])
+            $in_crusade = $user_data[0]['game_crusade_in_crusade'];
+            if(time() < $user_data[0]['game_crusade_time_end'] && $in_crusade)
             {
-                $in_crusade = TRUE;
                 $elapsed_time = date('i : s', $user_data[0]['game_crusade_time_end'] - time());
             }
             $time_available = $user_data[0]['game_crusade_current_date_total_time'];
@@ -148,7 +151,6 @@ class lib_game
         $crusade_data = $this->get_user_crusade_data();
         if($crusade_data['game_crusade_send_resources'] == 0 && !$crusade_data['elapsed_time'])
         {
-            echo 5;
             $where_parameters = array
                     (
                     'user_parameter_user_id' => $CI->session->userdata('user_id')
@@ -162,7 +164,8 @@ class lib_game
             $this->set_user_resource($resource['resource'], $current_amount + $resource['amount'], $where_parameters);
             $data = array
                         (
-                        'game_crusade_send_resources'   => '1'
+                        'game_crusade_send_resources'   => '1',
+                        'game_crusade_in_crusade'       => '0'
                         );
             $CI->crud->edit(GAME_CRUSADE_TABLE, $data, $where_crusade);
         }

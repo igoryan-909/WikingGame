@@ -9,13 +9,14 @@ class crud extends CI_Model
     
     public function add($table_name, $data)
     {
-        $this->db->insert($table_name, $data);
-        return $this->db->insert_id();
+        if($this->db->insert($table_name, $data)) return TRUE;
+        else return FALSE;
     }
     
     public function edit($table_name, $data, $where)
     {
-        $this->db->update($table_name, $data, $where);
+        if($this->db->update($table_name, $data, $where)) return TRUE;
+        else return FALSE;
     }
     
     public function get($table_name, $where)

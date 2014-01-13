@@ -31,7 +31,7 @@ class lib_auth {
                         'user_parameter_agility'     => 6,
                         'user_parameter_endurance'   => 6,
                         'user_parameter_gold'        => 0,
-                        'user_parameter_silver'      => 0,
+                        'user_parameter_silver'      => 10000,
                         );
         $CI->crud->add(GAME_USERS_PARAMETERS_TABLE, $user_data);
         $user_data = array(
