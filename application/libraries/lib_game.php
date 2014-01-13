@@ -14,6 +14,13 @@ class lib_game
         $CI->crud->edit(GAME_USERS_PARAMETERS_TABLE, $new_resource, $where);
     }
     
+    public function get_user_resource($resource, $where)
+    {
+        $CI = &get_instance();
+        $amount = $CI->crud->get(GAME_USERS_PARAMETERS_TABLE, $where);
+        return $amount[0]['user_parameter_' . $resource];
+    }
+    
     public function set_user_level($property)
     {
         $CI = &get_instance();
@@ -71,9 +78,125 @@ class lib_game
         } else return FALSE;
     }
     
-    public function user_crusade_start($time)
+    public function user_crusade_start($time_start, $time_end, $time_length)
     {
-        
+        $CI = &get_instance();
+        $where = array
+                    (
+                    'game_crusade_user_id'   => $CI->session->userdata('user_id')
+                    );
+        $user_data = $CI->crud->get(GAME_CRUSADE_TABLE, $where);
+        $data = array
+                    (
+                    'game_crusade_time_start'       => $time_start,
+                    'game_crusade_time_end'         => $time_end,
+                    'game_crusade_set_limit_date'   => date('Y-m-d'),
+                    'game_crusade_send_resources'   => '0'
+                    );
+        if(!empty($user_data))
+        {
+            if($user_data[0]['game_crusade_current_date_total_time'] > $time_length)
+            {
+                $data['game_crusade_current_date_total_time'] = $user_data[0]['game_crusade_current_date_total_time'] - $time_length;
+                $CI->crud->edit(GAME_CRUSADE_TABLE, $data, $where);
+            } else return FALSE;
+        } else
+        {
+            $data['game_crusade_current_date_total_time'] = 100 - $time_length;
+            $CI->crud->add(GAME_CRUSADE_TABLE, $data + $where);
+            //print_r($data + $where);
+        }
+    }
+    
+    public function get_user_crusade_data()
+    {
+        $CI = &get_instance();
+        $where = array
+                    (
+                    'game_crusade_user_id'   => $CI->session->userdata('user_id')
+                    );
+        $user_data = $CI->crud->get(GAME_CRUSADE_TABLE, $where);
+        $in_crusade = FALSE;
+        $elapsed_time = FALSE;
+        $time_available = 100;
+        $game_crusade_set_limit_date = 100;
+        $game_crusade_send_resources = 1;
+        if(!empty($user_data))
+        {
+            if(time() < $user_data[0]['game_crusade_time_end'] && time() > $user_data[0]['game_crusade_time_start'])
+            {
+                $in_crusade = TRUE;
+                $elapsed_time = date('i : s', $user_data[0]['game_crusade_time_end'] - time());
+            }
+            $time_available = $user_data[0]['game_crusade_current_date_total_time'];
+            $game_crusade_set_limit_date = $user_data[0]['game_crusade_set_limit_date'];
+            $game_crusade_send_resources = $user_data[0]['game_crusade_send_resources'];
+        }
+        return array
+                    (
+                    'in_crusade'                    => $in_crusade,
+                    'elapsed_time'                  => $elapsed_time,
+                    'time_available'                => $time_available,
+                    'game_crusade_set_limit_date'   => $game_crusade_set_limit_date,
+                    'game_crusade_send_resources'   => $game_crusade_send_resources
+                    );
+    }
+    
+    public function crusade_resources()
+    {
+        $CI = &get_instance();
+        $crusade_data = $this->get_user_crusade_data();
+        if($crusade_data['game_crusade_send_resources'] == 0 && !$crusade_data['elapsed_time'])
+        {
+            echo 5;
+            $where_parameters = array
+                    (
+                    'user_parameter_user_id' => $CI->session->userdata('user_id')
+                    );
+            $where_crusade = array
+                    (
+                    'game_crusade_user_id'   => $CI->session->userdata('user_id')
+                    );
+            $resource = $this->generate_resources();
+            $current_amount = $this->get_user_resource($resource['resource'], $where_parameters);
+            $this->set_user_resource($resource['resource'], $current_amount + $resource['amount'], $where_parameters);
+            $data = array
+                        (
+                        'game_crusade_send_resources'   => '1'
+                        );
+            $CI->crud->edit(GAME_CRUSADE_TABLE, $data, $where_crusade);
+        }
+    }
+    
+    public function check_crusade_limit()
+    {
+        $CI = &get_instance();
+        $crusade_data = $this->get_user_crusade_data();
+        if($crusade_data['game_crusade_set_limit_date'] != date('Y-m-d'))
+        {
+            $where_crusade = array
+                    (
+                    'game_crusade_user_id'   => $CI->session->userdata('user_id')
+                    );
+            $data = array
+                    (
+                    'game_crusade_current_date_total_time' => 100,
+                    'game_crusade_set_limit_date'          => date('Y-m-d')
+                    );
+            $CI->crud->edit(GAME_CRUSADE_TABLE, $data, $where_crusade);
+        }
+    }
+    
+    private function generate_resources()
+    {
+        $resource = (rand(1, 100) < 80) ? 'silver' : 'gold';
+        if($resource == 'gold') $amount = 1;
+        if($resource == 'silver') $amount = rand(50, 100);
+        return array
+                (
+                'resource'   => $resource,
+                'amount'     => $amount
+                );
     }
     
     private function check_resources($user_data, $resource, $amount)

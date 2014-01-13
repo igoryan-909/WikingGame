@@ -14,7 +14,7 @@
 </div>
 <div style="border-bottom: 1px solid black;">
     <h3><?=$this->lang->line('intuition')?></h3>
-    <p><?=$this->lang->line('user_level')?>: <?=$user_parameter_agility?></p>
+    <p><?=$this->lang->line('user_level')?>: <?=$user_parameter_intuition?></p>
     <p><?=$this->lang->line('enhancement_price')?>: <?=$users_enhancement_intuition?> <?=$this->lang->line('silver')?></p>
     <p><a href="<?=base_url()?>user/enhancement/intuition/"><?=$this->lang->line('upgrade')?></a></p>
 </div>

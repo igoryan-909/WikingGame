@@ -6,13 +6,18 @@ class Pages extends CI_Controller
     {
         parent::__construct();
         $this->lang->load('game');
+        //if($this->lib_auth->check_user($this->session->userdata('user_id'))) $this->lib_game->check_crusade_limit();
     }
     
     public function index()
     {
         $data['title'] = 'Добро пожаловать';
         if(!$this->lib_auth->check_user($this->session->userdata('user_id'))) $this->load->view('join/user_name', $data);
-        else $this->load->view('game/game', $data);
+        else
+        {
+            $this->load->view('game/game', $data);
+            $this->lib_game->crusade_resources();
+        }
     }
     
     public function join($step = FALSE)
@@ -89,9 +94,9 @@ class Pages extends CI_Controller
     
     public function authorize($send = FALSE)
     {
-        if($send)
+        if($send == 'send')
         {
-            if($this->lib_auth->authorize($_POST['user_name'], md5(trim($this->config->item('encryption_key') . $_POST['user_password'])))) redirect('user');
+            if($this->lib_auth->authorize($_POST['user_name'], md5(trim($this->config->item('encryption_key') . $_POST['user_password'])))) redirect('');
             else
             {
                 $data['error'] = $this->lang->line('incorrect_login');
@@ -99,7 +104,7 @@ class Pages extends CI_Controller
             }
         } else
         {
-            if($this->lib_auth->check_user($this->session->userdata('user_id'))) redirect('user');
+            if($this->lib_auth->check_user($this->session->userdata('user_id'))) redirect('');
             else $this->load->view('authorize/authorize');
         }
     }
@@ -113,6 +118,7 @@ class Pages extends CI_Controller
     public function user($function = FALSE, $parameter = FALSE)
     {
         if(!$this->lib_auth->check_user($this->session->userdata('user_id'))) redirect('authorize');
+        $this->lib_game->crusade_resources();
         $where = array
                     (
                     'user_id' => $this->session->userdata('user_id')
@@ -141,6 +147,22 @@ class Pages extends CI_Controller
                                 if($this->lib_game->set_user_level($parameter)) redirect('user/' . $function);
                                 else redirect('user/' . $function);
                                 break;
+                            case 'armor' :
+                                if($this->lib_game->set_user_level($parameter)) redirect('user/' . $function);
+                                else redirect('user/' . $function);
+                                break;
+                            case 'intuition' :
+                                if($this->lib_game->set_user_level($parameter)) redirect('user/' . $function);
+                                else redirect('user/' . $function);
+                                break;
+                            case 'agility' :
+                                if($this->lib_game->set_user_level($parameter)) redirect('user/' . $function);
+                                else redirect('user/' . $function);
+                                break;
+                            case 'endurance' :
+                                if($this->lib_game->set_user_level($parameter)) redirect('user/' . $function);
+                                else redirect('user/' . $function);
+                                break;
                         }
                     }
                     $this->load->view('game/user_enhancement', $data_enhancements[0] + $data_parameters[0] + $user_data[0]);
@@ -150,5 +172,35 @@ class Pages extends CI_Controller
         {
             $this->load->view('game/user', $user_data[0]);
         }
+    }
+    public function crusade($go = FALSE)
+    {
+        if(!$this->lib_auth->check_user($this->session->userdata('user_id'))) redirect('authorize');
+        $crusade_data = $this->lib_game->get_user_crusade_data();
+        if($go == 'go')
+        {
+            switch($_POST['crusade_time'])
+            {
+                case 1 :
+                    $crusade_length = $_POST['crusade_time'];
+                    break;
+                case 20 :
+                    $crusade_length = $_POST['crusade_time'];
+                    break;
+                default :
+                    $crusade_length = FALSE;
+            }
+            if($crusade_length && !$crusade_data['elapsed_time'])
+            {
+                $time_start = time();
+                $time_end = $time_start + ($crusade_length * 60);
+                $this->lib_game->user_crusade_start($time_start, $time_end, $crusade_length);
+            }
+            redirect('crusade/');
+        } else
+        {
+            if($crusade_data['elapsed_time']) $this->lib_game->crusade_resources();
+        }
+        $this->load->view('game/crusade', $crusade_data);
     }
 }

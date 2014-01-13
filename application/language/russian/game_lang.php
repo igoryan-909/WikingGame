@@ -20,6 +20,7 @@ $lang['agility'] = 'Ловкость';
 $lang['endurance'] = 'Живучесть';
 $lang['hero'] = 'Герой';
 $lang['crusade'] = 'Поход';
+$lang['main_page'] = 'Главная';
 
 /* End of file number_lang.php */
 /* Location: ./system/language/english/number_lang.php */
